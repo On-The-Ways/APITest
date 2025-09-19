@@ -1,6 +1,18 @@
 pipeline {
     agent any
     
+    // 正确配置tools块的示例（需要根据实际Jenkins环境中的工具配置）
+    tools {
+        // 示例：如果Jenkins中配置了Python工具
+        // python "Python3"
+        
+        // 示例：如果Jenkins中配置了JDK
+        // jdk "JDK11"
+        
+        // 示例：如果Jenkins中配置了Maven
+        // maven "Maven3"
+    }
+    
     environment {
         // 定义环境变量
         ALLURE_RESULTS = "allure-results"
@@ -18,8 +30,8 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 script {
-                    // 在Linux环境中使用sh而不是bat
-                    sh 'pip install -r requirements.txt'
+                    // 安装依赖
+                    bat 'pip install -r requirements.txt'
                 }
             }
         }
@@ -27,8 +39,8 @@ pipeline {
         stage('Run API Tests') {
             steps {
                 script {
-                    // 在Linux环境中使用sh而不是bat
-                    sh 'python test_api.py'
+                    // 运行API测试
+                    bat 'python test_api.py'
                 }
             }
             post {
@@ -42,8 +54,8 @@ pipeline {
         stage('Run Web Tests') {
             steps {
                 script {
-                    // 在Linux环境中使用sh而不是bat
-                    sh 'python test_web.py'
+                    // 运行Web测试
+                    bat 'python test_web.py'
                 }
             }
             post {
@@ -56,8 +68,8 @@ pipeline {
         stage('Generate Allure Report') {
             steps {
                 script {
-                    // 在Linux环境中使用sh而不是bat
-                    sh 'allure generate allure-results -o allure-report --clean'
+                    // 生成Allure报告
+                    bat 'allure generate allure-results -o allure-report --clean'
                 }
             }
         }
@@ -65,18 +77,15 @@ pipeline {
     
     post {
         always {
-            // 使用archiveArtifacts而不是publishHTML来存档报告
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-            
-            // 如果安装了HTML Publisher插件，可以取消注释下面的代码
-            // publishHTML([
-            //     allowMissing: false,
-            //     alwaysLinkToLastBuild: true,
-            //     keepAll: true,
-            //     reportDir: 'allure-report',
-            //     reportFiles: 'index.html',
-            //     reportName: 'Allure Report'
-            // ])
+            // 发布Allure报告
+            publishHTML([
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'allure-report',
+                reportFiles: 'index.html',
+                reportName: 'Allure Report'
+            ])
         }
     }
 }
