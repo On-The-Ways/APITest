@@ -1,6 +1,18 @@
 pipeline {
     agent any
     
+    // 正确配置tools块的示例（需要根据实际Jenkins环境中的工具配置）
+    tools {
+        // 示例：如果Jenkins中配置了Python工具
+        // python "Python3"
+        
+        // 示例：如果Jenkins中配置了JDK
+        // jdk "JDK11"
+        
+        // 示例：如果Jenkins中配置了Maven
+        // maven "Maven3"
+    }
+    
     environment {
         // 定义环境变量
         ALLURE_RESULTS = "allure-results"
@@ -20,8 +32,6 @@ pipeline {
                 script {
                     // 安装依赖
                     bat 'pip install -r requirements.txt'
-                    // 或者直接安装需要的包
-                    // bat 'pip install requests pytest allure-pytest selenium'
                 }
             }
         }
@@ -76,15 +86,6 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: 'Allure Report'
             ])
-            
-            // 或者使用Allure插件（如果已安装）
-            // allure([
-            //     includeProperties: false,
-            //     jdk: '',
-            //     properties: [],
-            //     reportBuildPolicy: 'ALWAYS',
-            //     results: [[path: 'allure-results']]
-            // ])
         }
     }
 }
