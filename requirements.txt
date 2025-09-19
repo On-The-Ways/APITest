@@ -1,3 +1,5 @@
+# 在Jenkins环境中，我们通过脚本确保pip可用，而不是通过requirements.txt
+# 这个文件主要列出项目依赖
 requests==2.32.3
 pytest==8.4.1
 allure-pytest==2.14.3

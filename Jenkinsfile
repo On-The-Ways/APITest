@@ -18,8 +18,13 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 script {
-                    // 在Linux环境中使用sh而不是bat
-                    sh 'pip install -r requirements.txt'
+                    // 检查Python和pip是否可用
+                    sh 'which python || which python3'
+                    sh 'which pip || which pip3 || python -m ensurepip || python3 -m ensurepip'
+                    
+                    // 升级pip并安装依赖
+                    sh 'python -m pip install --upgrade pip || python3 -m pip install --upgrade pip'
+                    sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
                 }
             }
         }
@@ -27,8 +32,8 @@ pipeline {
         stage('Run API Tests') {
             steps {
                 script {
-                    // 在Linux环境中使用sh而不是bat
-                    sh 'python test_api.py'
+                    // 运行API测试
+                    sh 'python test_api.py || python3 test_api.py'
                 }
             }
             post {
@@ -42,8 +47,8 @@ pipeline {
         stage('Run Web Tests') {
             steps {
                 script {
-                    // 在Linux环境中使用sh而不是bat
-                    sh 'python test_web.py'
+                    // 运行Web测试
+                    sh 'python test_web.py || python3 test_web.py'
                 }
             }
             post {
@@ -56,7 +61,7 @@ pipeline {
         stage('Generate Allure Report') {
             steps {
                 script {
-                    // 在Linux环境中使用sh而不是bat
+                    // 生成Allure报告
                     sh 'allure generate allure-results -o allure-report --clean'
                 }
             }

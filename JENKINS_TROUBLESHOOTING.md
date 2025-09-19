@@ -37,6 +37,14 @@ Stage "Run API Tests" skipped due to earlier failure(s)
 
 这个错误表明在Linux Jenkins节点上尝试执行Windows批处理命令（[bat](file://C:\Users\51109\PycharmProjects\TestProject\test_web.py#L37-L37)），应该使用[sh](file://C:\Users\51109\PycharmProjects\TestProject\Jenkinsfile#L32-L32)命令。
 
+### 错误5: 系统中未找到pip命令
+```
+/var/jenkins_home/workspace/接口自动化测试@tmp/durable-94834a2b/script.sh.copy: 1: pip: not found
+ERROR: script returned exit code 127
+```
+
+这个错误表明Jenkins环境中没有找到[pip](file://C:\Users\51109\PycharmProjects\TestProject\requirements.txt)命令，说明Python环境没有正确安装或配置。
+
 ## 常见原因和解决方案
 
 ### 1. 分支名称不匹配
@@ -162,7 +170,51 @@ stages {
 }
 ```
 
-### 5. 仓库URL配置错误
+### 5. 系统中未找到pip命令
+
+#### 问题原因
+Jenkins环境中没有安装Python或pip，或者它们不在系统PATH中。
+
+#### 解决方案
+**方式一：在Jenkins中配置Python工具（推荐）**
+1. 在Jenkins管理界面中安装Python插件
+2. 在"全局工具配置"中添加Python安装
+3. 在Jenkinsfile中使用tools块指定Python工具
+
+**方式二：在脚本中处理Python环境**
+```groovy
+stage('Setup Environment') {
+    steps {
+        script {
+            // 检查Python和pip是否可用
+            sh 'which python || which python3'
+            sh 'which pip || which pip3 || python -m ensurepip || python3 -m ensurepip'
+            
+            // 升级pip并安装依赖
+            sh 'python -m pip install --upgrade pip || python3 -m pip install --upgrade pip'
+            sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
+        }
+    }
+}
+```
+
+**方式三：使用Jenkins的Python工具**
+```groovy
+tools {
+    python "Python3"  // 确保在Jenkins中配置了Python3工具
+}
+
+stages {
+    stage('Setup Environment') {
+        steps {
+            sh 'python -m pip install --upgrade pip'
+            sh 'pip install -r requirements.txt'
+        }
+    }
+}
+```
+
+### 6. 仓库URL配置错误
 
 #### 问题原因
 可能配置了错误的仓库URL或者仓库不存在。
@@ -172,7 +224,7 @@ stages {
 2. 确保Jenkins可以访问该仓库
 3. 如果是私有仓库，确保配置了正确的凭据
 
-### 6. 网络连接问题
+### 7. 网络连接问题
 
 #### 问题原因
 Jenkins服务器无法连接到Git服务器。
@@ -261,7 +313,11 @@ git ls-remote --heads https://github.com/your-username/your-repo.git
    - 安装HTML Publisher插件，或
    - 使用archiveArtifacts替代[publishHTML](file://C:\Users\51109\PycharmProjects\TestProject\allure-report\history)
 
-6. 重新运行构建
+6. 解决Python环境问题：
+   - 在Jenkins中配置Python工具，或
+   - 在脚本中处理Python环境的初始化
+
+7. 重新运行构建
 
 ## 预防措施
 
@@ -269,5 +325,6 @@ git ls-remote --heads https://github.com/your-username/your-repo.git
 2. 确保Jenkinsfile语法正确，可以使用Jenkins的"Pipeline Syntax"工具验证
 3. 根据Jenkins节点的操作系统使用相应的命令
 4. 确保使用的所有插件都已安装
-5. 使用参数化构建，允许在运行时指定分支
-6. 在团队内部统一分支命名规范
+5. 确保所有必要的工具（Python, pip, allure等）都已正确安装
+6. 使用参数化构建，允许在运行时指定分支
+7. 在团队内部统一分支命名规范
